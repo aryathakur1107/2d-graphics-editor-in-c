@@ -1,0 +1,87 @@
+You are an expert C developer. Your task is to write a specific 2D text graphics editor in C. You must follow this specification EXACTLY. Do not deviate from the provided structures, algorithms, global variables, or function names. Do not add extra features or hallucinate new behaviors. 
+
+Write the entire code in a single file based on the strict architectural blueprint below.
+
+### 1. Headers and Macros
+Include standard headers: `<stdio.h>`, `<stdlib.h>`, `<math.h>`.
+Define the following macros exactly:
+#define ROWS 22
+#define COLS 60
+#define MAX_OBJECTS 100
+
+### 2. Data Structures
+Define an enum for shape types:
+`typedef enum { LINE, RECTANGLE, CIRCLE, TRIANGLE } ShapeType;`
+
+Define a struct to track objects:
+`typedef struct { int id; ShapeType type; int x1, y1; int x2, y2; int x3, y3; int radius; int active; } Shape;`
+
+### 3. Global Variables
+Initialize these exact globals:
+`char canvas[ROWS][COLS];`
+`Shape object_list[MAX_OBJECTS];`
+`int object_counter = 0;`
+
+### 4. Function Prototypes
+You must implement these exact function signatures:
+void init_canvas();
+void display_canvas();
+void draw_line(int x1, int y1, int x2, int y2);
+void draw_rectangle(int x1, int y1, int x2, int y2);
+void draw_circle(int xc, int yc, int r);
+void draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3);
+void redraw_canvas();
+void add_object();
+void delete_object();
+void modify_object();
+void list_objects();
+void plot_pixel(int x, int y);
+void plot_circle_points(int xc, int yc, int x, int y);
+
+### 5. Implementation Details
+
+**main()**
+- Call `init_canvas()`.
+- Run an infinite `while(1)` loop showing a menu:
+  "=== 2D TEXT GRAPHICS EDITOR ==="
+  "1. Display Canvas"
+  "2. Add Object (Line, Rectangle, Circle, Triangle)"
+  "3. Delete Object"
+  "4. Modify Object"
+  "5. List Active Objects"
+  "6. Exit"
+- Use a `switch` statement mapped 1-to-1 to the function prototypes.
+- Handle `scanf` failure: if `scanf("%d", &choice) != 1`, print "Invalid input. Exiting.\n" and break.
+- Option 6 must print "Exiting Graphics Editor. Goodbye!\n" and `exit(0)`.
+
+**init_canvas()**
+- Iterate through ROWS and COLS, setting every element of `canvas` to `'_'`.
+
+**display_canvas()**
+- Print a top header with column indices. The tens digit on one line, and units digit on the next (e.g., spacing to match the columns).
+- Print row index formatted as `"%2d "` before printing the `canvas` array row by row.
+
+**plot_pixel(int x, int y)**
+- Check bounds: `x >= 0 && x < COLS && y >= 0 && y < ROWS`.
+- If inside bounds, set `canvas[y][x] = '*'`.
+
+**Drawing Algorithms**
+- `draw_line`: MUST use strict Bresenham's Line Algorithm (calculating `dx`, `sx`, `dy`, `sy`, and `err`).
+- `draw_rectangle`: Call `draw_line` 4 times (top, right, bottom, left).
+- `plot_circle_points`: Helper function that plots the 8 symmetric points of a circle using `plot_pixel`.
+- `draw_circle`: MUST use the Midpoint Circle Algorithm (initializing `x=0`, `y=r`, `d=3-2*r` and updating `d`). Call `plot_circle_points` inside the loop.
+- `draw_triangle`: Call `draw_line` 3 times connecting the 3 given vertices.
+
+**State Management Functions**
+- `redraw_canvas`: Call `init_canvas()`, then loop through `object_list` up to `object_counter`. If `active == 1`, use a `switch(type)` to redraw each object.
+- `add_object`: 
+  - Check if `object_counter >= MAX_OBJECTS`.
+  - Prompt "Select Shape Type:\n1. Line\n2. Rectangle\n3. Circle\n4. Triangle\nChoice: ".
+  - Assign ID as `object_counter + 1` and `active = 1`.
+  - Ask for appropriate coordinates using `scanf` based on the shape type (e.g., Center & Radius for Circle, Top-Left & Bottom-Right for Rect).
+  - Add to `object_list`, increment `object_counter`, call `redraw_canvas()`, and print a success message with the ID.
+- `delete_object`: Call `list_objects()`. Prompt for target ID. Loop to find matching `id` and `active == 1`. Set `active = 0`, call `redraw_canvas()`, and print success.
+- `modify_object`: Call `list_objects()`. Prompt for target ID. Find it, ask for its respective new coordinates using `scanf` based on its shape type, update the struct, call `redraw_canvas()`, and print success.
+- `list_objects`: Loop through `object_counter`. Print `count`, `id`, and specific coordinates/properties for all `active` objects. If no active objects, print "(None)".
+
+Ensure no extra text manipulation libraries are used. Provide only the pure C code wrapped in a markdown code block.
